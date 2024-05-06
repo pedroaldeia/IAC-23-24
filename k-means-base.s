@@ -67,6 +67,7 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 
 
 
+
 # Codigo
  
 .text
@@ -108,9 +109,21 @@ printPoint:
 # Limpa todos os pontos do ecrã
 # Argumentos: nenhum
 # Retorno: nenhum
-
+# POR IMPLEMENTAR (1a parte)
 cleanScreen:
-    # POR IMPLEMENTAR (1a parte)
+    li t1, LED_MATRIX_0_HEIGHT
+    li t2, LED_MATRIX_0_WIDTH
+    mul t1, t2, t1 # t1 - num leds
+    slli t1, t1, 2 # t1 - num leds * 4
+    li t2, LED_MATRIX_0_BASE  # => 1º addr
+    add t1, t1, t2  # t1 - num leds * 4 + Base => ult addr
+    
+cSLoop:
+    beq t2,t1, cSOut  
+    sw x0, 0(t2)
+    addi t2, t2, 4
+    j cSLoop
+cSOut:
     jr ra
 
     
@@ -204,4 +217,18 @@ nearestCluster:
 
 mainKMeans:  
     # POR IMPLEMENTAR (2a parte)
+    jr ra
+
+
+# TESTES
+testeClean:
+    li a0, 1
+    li a1, 1
+    li a2, 0x00FF0000
+    jal printPoint
+    
+    li a0, 0
+    li a1, 0x18
+    li a2, 0x0000FFFF
+    jal printPoint
     jr ra
