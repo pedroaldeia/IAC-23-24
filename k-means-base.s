@@ -1,13 +1,13 @@
 #
 # IAC 2023/2024 k-means
 # 
-# Grupo:
-# Campus:
+# Grupo:27/21/24?
+# Campus:Alameda
 #
 # Autores:
-# n_aluno, nome
-# n_aluno, nome
-# n_aluno, nome
+# 109623, Tiago Lobo
+# 109989, Pedro Aldeia
+# 110438, Dinis Pimentel
 #
 # Tecnico/ULisboa
 
@@ -86,6 +86,7 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 # Pinta o ponto (x,y) na LED matrix com a cor passada por argumento
 # Nota: a implementacao desta funcao ja' e' fornecida pelos docentes
 # E' uma funcao auxiliar que deve ser chamada pelas funcoes seguintes que pintam a LED matrix.
+# Não altera registos temporários.
 # Argumentos:
 # a0: x
 # a1: y
@@ -133,31 +134,40 @@ cSOut:
 # Retorno: nenhum
 
 printClusters:
-    # POR IMPLEMENTAR (1a e 2a parte)
-    la   t0, n_points
-    la   t1, points
+    # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
+    la   t0, n_points    #t0-> n_points
+    la   t1, points      #t1-> vetor points
+    #la   t3, clusters    #t3-> vetor clusters
+    #la   t4, colors      #t4-> vetor das cores
     lw   t0, 0(t0)
+    #salvaguardar os argumentos anteriores:
     addi sp, sp, -16
     sw   ra, 0(sp)
     sw   a0, 4(sp)
     sw   a1, 8(sp)
     sw   a2, 12(sp)
 printLoop:
-    beq  t0, x0, endLoop
-    addi t0, t0, -1
-    lw   a0, 0(t1)
-    lw   a1, 4(t1)
-    li   a2, 0xffffff
-    addi t1, t1, 8
-    jal  ra, printPoint
+    beq  t0, x0, endLoop #se ja não houverem pontos para dar print
+    addi t0, t0, -1 
+    lw   a0, 0(t1)       #vai buscar o x e y
+    lw   a1, 4(t1)  
+    li   a2, 0xffffff ## <--remover depois
+    #lw   t5, 0(t3)       #vai buscar o numero do cluster do ponto
+    #slli t5, t5, 2
+    #addi t4, t5, t4      #calcula o endereço da cor do cluster
+    #lw   a2, 0(t4)       #vai buscar a cor
+    #addi t3, t3, 4
+    addi t1, t1, 8        #passa para o proximo ponto
+    jal  ra, printPoint   #pinta o ponto (anterior) no led
     j    printLoop
 endLoop:
+    #vai buscar os valores de antes
     lw   ra, 0(sp)
     lw   a0, 4(sp)
     lw   a1, 8(sp)
     lw   a2, 12(sp)
     addi sp, sp, 16
-    jr ra
+    jr ra                 #volta para o endereço anterior
 
 ### printCentroids
 # Pinta os centroides na LED matrix
@@ -166,14 +176,26 @@ endLoop:
 # Retorno: nenhum
 
 printCentroids:
-    # POR IMPLEMENTAR (1a e 2a parte)
-    addi t0, x0, k
-    
-
+    # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
+    la t0, k  # t0 = &k
+    lw t0, 0(t0) # t0 = *t0
+    la t1, centroids  # first item addr, centroids
+    slli t0, t0, 3 # t0 = t0 * 8  [k*4*2]
+    add t0, t1, t0  # t0 = [centroids_out_of_bounds]
 prtCenLoop:
-    beq t0, x0, prtCenOut 
+    beq t1, t0, prtCenOut  # se t1 == t0 [addr_centroid == centroids_out_of_bounds]
 
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
+    lw a0, 0(t1)
+    lw a1, 4(t1)
+    li a2, white  # depois ver como mudar dependendo das situações
+    jal printPoint  # print(t1.x, t1.y, white) ; t1 (addr_centroid)
+    lw ra, 0(sp)
+    addi t1, t1, 8
 
+    j prtCenLoop
 prtCenOut:
     jr ra
     
@@ -195,7 +217,10 @@ calculateCentroids:
 # Retorno: nenhum
 
 mainSingleCluster:
-
+    addi sp, sp, -4
+    #sw ra, 0(sp)
+    #jal printClusters
+    jal printCentroids
     #1. Coloca k=1 (caso nao esteja a 1)
     # POR IMPLEMENTAR (1a parte)
 
@@ -212,6 +237,9 @@ mainSingleCluster:
     # POR IMPLEMENTAR (1a parte)
 
     #6. Termina
+
+    lw ra, 0(sp)
+    addi sp, sp, 4
     jr ra
 
 
@@ -256,10 +284,14 @@ testeClean:
     li a0, 1
     li a1, 1
     li a2, 0x00FF0000
+    addi sp, sp -4
+    sw ra, 0(sp)
     jal printPoint
     
     li a0, 0
     li a1, 0x18
     li a2, 0x0000FFFF
     jal printPoint
+    lw ra, 0(sp)
+    addi sp, sp, 4
     jr ra
