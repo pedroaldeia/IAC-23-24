@@ -134,8 +134,30 @@ cSOut:
 
 printClusters:
     # POR IMPLEMENTAR (1a e 2a parte)
+    la   t0, n_points
+    la   t1, points
+    lw   t0, 0(t0)
+    addi sp, sp, -16
+    sw   ra, 0(sp)
+    sw   a0, 4(sp)
+    sw   a1, 8(sp)
+    sw   a2, 12(sp)
+printLoop:
+    beq  t0, x0, endLoop
+    addi t0, t0, -1
+    lw   a0, 0(t1)
+    lw   a1, 4(t1)
+    li   a2, 0xffffff
+    addi t1, t1, 8
+    jal  ra, printPoint
+    j    printLoop
+endLoop:
+    lw   ra, 0(sp)
+    lw   a0, 4(sp)
+    lw   a1, 8(sp)
+    lw   a2, 12(sp)
+    addi sp, sp, 16
     jr ra
-
 
 ### printCentroids
 # Pinta os centroides na LED matrix
@@ -145,6 +167,14 @@ printClusters:
 
 printCentroids:
     # POR IMPLEMENTAR (1a e 2a parte)
+    addi t0, x0, k
+    
+
+prtCenLoop:
+    beq t0, x0, prtCenOut 
+
+
+prtCenOut:
     jr ra
     
 
@@ -155,6 +185,7 @@ printCentroids:
 
 calculateCentroids:
     # POR IMPLEMENTAR (1a e 2a parte)
+    
     jr ra
 
 
