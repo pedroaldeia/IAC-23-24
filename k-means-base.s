@@ -1,7 +1,7 @@
 #
 # IAC 2023/2024 k-means
 # 
-# Grupo:27/21/24?
+# Grupo:27
 # Campus:Alameda
 #
 # Autores:
@@ -119,12 +119,12 @@ cleanScreen:
     li t2, LED_MATRIX_0_BASE  # => 1º addr
     add t1, t1, t2  # t1 - num leds * 4 + Base => ult addr
     
-cSLoop:
-    beq t2,t1, cSOut  
+loopCleanScreen:
+    beq t2,t1, outCleanScreen  
     sw x0, 0(t2)
     addi t2, t2, 4
-    j cSLoop
-cSOut:
+    j loopCleanScreen
+outCleanScreen:
     jr ra
 
     
@@ -146,8 +146,8 @@ printClusters:
     sw   a0, 4(sp)
     sw   a1, 8(sp)
     sw   a2, 12(sp)
-printLoop:
-    beq  t0, x0, endLoop #se ja não houverem pontos para dar print
+loopPrintClusters:
+    beq  t0, x0, outPrintClusters #se ja não houverem pontos para dar print
     addi t0, t0, -1 
     lw   a0, 0(t1)       #vai buscar o x e y
     lw   a1, 4(t1)  
@@ -159,8 +159,8 @@ printLoop:
     #addi t3, t3, 4
     addi t1, t1, 8        #passa para o proximo ponto
     jal  ra, printPoint   #pinta o ponto (anterior) no led
-    j    printLoop
-endLoop:
+    j    loopPrintClusters
+outPrintClusters:
     #vai buscar os valores de antes
     lw   ra, 0(sp)
     lw   a0, 4(sp)
@@ -182,8 +182,8 @@ printCentroids:
     la t1, centroids  # first item addr, centroids
     slli t0, t0, 3 # t0 = t0 * 8  [k*4*2]
     add t0, t1, t0  # t0 = [centroids_out_of_bounds]
-prtCenLoop:
-    beq t1, t0, prtCenOut  # se t1 == t0 [addr_centroid == centroids_out_of_bounds]
+loopPrintCentroids:
+    beq t1, t0, outPrintCentroids  # se t1 == t0 [addr_centroid == centroids_out_of_bounds]
 
     addi sp, sp, -4
     sw ra, 0(sp)
@@ -195,8 +195,8 @@ prtCenLoop:
     lw ra, 0(sp)
     addi t1, t1, 8
 
-    j prtCenLoop
-prtCenOut:
+    j loopPrintCentroids
+outPrintCentroids:
     jr ra
     
 
@@ -207,8 +207,50 @@ prtCenOut:
 
 calculateCentroids:
     # POR IMPLEMENTAR (1a e 2a parte)
-    
+    la a2, points #endereço do array
+    lw a3, n_points
+    add a3, a3, a3
+    #addi a3, x0, 5 #length
+    add a4, x0, x0 #counter
+    add a0, x0, x0 
+    add a1, x0, x0 #initialize
+    addi t2, x0, 2 
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    jal ra, arrayAverage #call to function
+    lw ra, 0(sp)
+    addi sp, sp 4
+    la t3, centroids
+    sw a0, 0(t3)
+    sw a1, 4(t3)
+    lw t4, 0(t3)
+    lw t5, 4(t3)
     jr ra
+    
+arrayAverage:
+    beq a4, a3, outCalculateCentroids #exit
+    add t3, x0, a4 #a1 = counter
+    slli t3, t3, 2 #a1 * 4
+    add t3, t3, a2 #endereço da posição do counter
+    lw t0, 0(t3) #t0 = A[counter]
+    rem t4, a4, t2 #ver se é par
+    bnez t4, oddCalculateCentroids
+    add a0, a0, t0 #caso par
+    addi a4, a4, 1
+    j arrayAverage
+    
+oddCalculateCentroids:
+    add a1, a1, t0 #caso ímpar
+    addi a4, a4, 1
+    j arrayAverage  
+    
+outCalculateCentroids:
+    addi t4, x0, 2
+    div t4, a3, t4
+    div a0, a0, t4
+    div a1, a1, t4
+    jr ra 
+
 
 
 ### mainSingleCluster
@@ -217,31 +259,31 @@ calculateCentroids:
 # Retorno: nenhum
 
 mainSingleCluster:
+    
     addi sp, sp, -4
-    #sw ra, 0(sp)
-    #jal printClusters
-    jal printCentroids
+    sw   ra, 0(sp)
+    
     #1. Coloca k=1 (caso nao esteja a 1)
-    # POR IMPLEMENTAR (1a parte)
+    la    t0, k
+    addi  t1, x0, 1
+    sw    t1, 0(t0)
 
     #2. cleanScreen
-    # POR IMPLEMENTAR (1a parte)
+    jal   ra, cleanScreen
 
     #3. printClusters
-    # POR IMPLEMENTAR (1a parte)
-
+    jal  ra, printClusters
+    
     #4. calculateCentroids
-    # POR IMPLEMENTAR (1a parte)
+    jal   ra, calculateCentroids
 
     #5. printCentroids
-    # POR IMPLEMENTAR (1a parte)
+    jal   ra, printCentroids
 
     #6. Termina
-
-    lw ra, 0(sp)
-    addi sp, sp, 4
+    lw    ra, 0(sp)
+    addi  sp, sp, 4
     jr ra
-
 
 
 ### manhattanDistance
