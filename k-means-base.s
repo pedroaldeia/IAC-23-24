@@ -37,10 +37,16 @@
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-n_points:    .word 30
-points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+#n_points:    .word 30
+#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
+#InputExtra A
+#n_points:     .word 4
+#points:       .word 5,1 , 5,5, 3,3, 7, 3
 
+#InputExtra B
+n_points:     .word 4
+points:       .word 0,0 , 31,31, 0,31, 31, 0
 
 # Valores de centroids e k a usar na 1a parte do projeto:
 centroids:   .word 0,0
@@ -53,9 +59,7 @@ k:           .word 1
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
-#clusters:    
-
-
+#clusters:
 
 
 #Definicoes de cores a usar no projeto 
@@ -65,7 +69,19 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 .equ         black      0
 .equ         white      0xffffff
 
+.equ         printString    4
 
+
+.equ    shouldPrintMessage_PrintPoint   0
+
+.
+
+messageCleanScreen:             .string    "cleanScreen executado."
+messagePrintPoint:              .string    "printPoint executado."
+messagePrintClusters:           .string    "printClusters executado."
+messagePrintCentroids:          .string    "printCentroids executado."
+messageCalculateCentroids:      .string    "calculateCentroids executado."
+messageEndMainSingleCluster:    .string    "Procedimento mainSingleCluster terminou execução."
 
 
 # Codigo
@@ -93,6 +109,8 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 # a2: cor
 
 printPoint:
+    
+
     li a3, LED_MATRIX_0_HEIGHT
     sub a1, a3, a1
     addi a1, a1, -1
@@ -103,15 +121,22 @@ printPoint:
     li a0, LED_MATRIX_0_BASE
     add a3, a3, a0   # addr
     sw a2, 0(a3)
-    jr ra
+    
+    li a0, shouldPrintMessage_PrintPoint 
+    beqz a0, skipPrintPrintPoint
+    la a0, messagePrintPoint  
+    li a7, printString
+    ecall
+    
+skipPrintPrintPoint:    jr ra
     
 
 ### cleanScreen
 # Limpa todos os pontos do ecrã
 # Argumentos: nenhum
 # Retorno: nenhum
-# POR IMPLEMENTAR (1a parte)
 cleanScreen:
+    li t0, white
     li t1, LED_MATRIX_0_HEIGHT
     li t2, LED_MATRIX_0_WIDTH
     mul t1, t2, t1 # t1 - num leds
@@ -121,10 +146,51 @@ cleanScreen:
     
 loopCleanScreen:
     beq t2,t1, outCleanScreen  
-    sw x0, 0(t2)
+    sw t0, 0(t2)  # coloca a cor na memória
     addi t2, t2, 4
     j loopCleanScreen
 outCleanScreen:
+
+    la a0, messageCleanScreen
+    li a7, printString
+    ecall
+    jr ra
+
+
+cleanScreenAlt:
+    addi sp, sp, -4
+    sw ra, 0(sp)
+
+    la t0, points
+    la t1, n_points
+boundsSetupCleanScreenAlt:    
+    lw t1, 0(t1)
+
+    slli t1,t1, 2
+    add t1, t1, t0
+    addi t2, x0, 1
+
+loopCleanScreenAlt:
+    beq t0, t1, preReLoopCleanScreenAlt
+    
+    lw a0, 0(t0)
+    lw a1, 4(t0)
+    li a2, white
+    jal printPoint
+    
+    addi t0, t0, 8
+    j loopCleanScreenAlt
+
+preReLoopCleanScreenAlt:
+    beq t2, x0, outCleanScreenAlt
+    addi t2, x0, -1
+    la t0, centroids
+    la t1, k
+    j boundsSetupCleanScreenAlt
+    
+outCleanScreenAlt:
+    lw ra, 0(sp)
+    addi sp, sp, 4
     jr ra
 
     
@@ -151,7 +217,7 @@ loopPrintClusters:
     addi t0, t0, -1 
     lw   a0, 0(t1)       #vai buscar o x e y
     lw   a1, 4(t1)  
-    li   a2, 0xffffff ## <--remover depois
+    li   a2, 0x00ffff ## <--remover depois
     #lw   t5, 0(t3)       #vai buscar o numero do cluster do ponto
     #slli t5, t5, 2
     #addi t4, t5, t4      #calcula o endereço da cor do cluster
@@ -167,6 +233,9 @@ outPrintClusters:
     lw   a1, 8(sp)
     lw   a2, 12(sp)
     addi sp, sp, 16
+    la a0, messagePrintClusters
+    li a7, printString
+    ecall
     jr ra                 #volta para o endereço anterior
 
 ### printCentroids
@@ -190,13 +259,17 @@ loopPrintCentroids:
     
     lw a0, 0(t1)
     lw a1, 4(t1)
-    li a2, white  # depois ver como mudar dependendo das situações
-    jal printPoint  # print(t1.x, t1.y, white) ; t1 (addr_centroid)
+    li a2, black
+    jal printPoint  # print(t1.x, t1.y, black) ; t1 [addr_centroid]
     lw ra, 0(sp)
     addi t1, t1, 8
 
     j loopPrintCentroids
 outPrintCentroids:
+
+    la a0, messagePrintCentroids
+    li a7, printString
+    ecall
     jr ra
     
 
@@ -206,7 +279,7 @@ outPrintCentroids:
 # Retorno: nenhum
 
 calculateCentroids:
-    # POR IMPLEMENTAR (1a e 2a parte)
+    # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
     la a2, points #endereço do array
     lw a3, n_points
     add a3, a3, a3
@@ -225,6 +298,11 @@ calculateCentroids:
     sw a1, 4(t3)
     lw t4, 0(t3)
     lw t5, 4(t3)
+    
+    la a0, messageCalculateCentroids
+    li a7, printString
+    ecall
+    
     jr ra
     
 arrayAverage:
@@ -249,6 +327,7 @@ outCalculateCentroids:
     div t4, a3, t4
     div a0, a0, t4
     div a1, a1, t4
+
     jr ra 
 
 
@@ -283,6 +362,11 @@ mainSingleCluster:
     #6. Termina
     lw    ra, 0(sp)
     addi  sp, sp, 4
+
+    la a0, messageEndMainSingleCluster
+    li a7, printString
+    ecall
+
     jr ra
 
 
@@ -323,17 +407,21 @@ mainKMeans:
 
 # TESTES
 testeClean:
+    addi sp, sp -4
+    sw ra, 0(sp)
+
     li a0, 1
     li a1, 1
     li a2, 0x00FF0000
-    addi sp, sp -4
-    sw ra, 0(sp)
     jal printPoint
     
     li a0, 0
     li a1, 0x18
     li a2, 0x0000FFFF
     jal printPoint
+
+    jal cleanScreen
+
     lw ra, 0(sp)
     addi sp, sp, 4
     jr ra
