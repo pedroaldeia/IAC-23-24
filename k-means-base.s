@@ -74,14 +74,12 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 
 .equ    shouldPrintMessage_PrintPoint   0
 
-.
-
-messageCleanScreen:             .string    "cleanScreen executado."
-messagePrintPoint:              .string    "printPoint executado."
-messagePrintClusters:           .string    "printClusters executado."
-messagePrintCentroids:          .string    "printCentroids executado."
-messageCalculateCentroids:      .string    "calculateCentroids executado."
-messageEndMainSingleCluster:    .string    "Procedimento mainSingleCluster terminou execução."
+messageCleanScreen:             .string    "cleanScreen executado.\n"
+messagePrintPoint:              .string    "printPoint executado.\n"
+messagePrintClusters:           .string    "printClusters executado.\n"
+messagePrintCentroids:          .string    "printCentroids executado.\n"
+messageCalculateCentroids:      .string    "calculateCentroids executado.\n"
+messageEndMainSingleCluster:    .string    "Procedimento mainSingleCluster terminou execução.\n"
 
 
 # Codigo
@@ -246,6 +244,9 @@ outPrintClusters:
 
 printCentroids:
     # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
     la t0, k  # t0 = &k
     lw t0, 0(t0) # t0 = *t0
     la t1, centroids  # first item addr, centroids
@@ -254,14 +255,12 @@ printCentroids:
 loopPrintCentroids:
     beq t1, t0, outPrintCentroids  # se t1 == t0 [addr_centroid == centroids_out_of_bounds]
 
-    addi sp, sp, -4
-    sw ra, 0(sp)
-    
+
     lw a0, 0(t1)
     lw a1, 4(t1)
     li a2, black
     jal printPoint  # print(t1.x, t1.y, black) ; t1 [addr_centroid]
-    lw ra, 0(sp)
+    
     addi t1, t1, 8
 
     j loopPrintCentroids
@@ -270,6 +269,8 @@ outPrintCentroids:
     la a0, messagePrintCentroids
     li a7, printString
     ecall
+    lw ra, 0(sp)
+    addi sp, sp 4
     jr ra
     
 
@@ -360,13 +361,12 @@ mainSingleCluster:
     jal   ra, printCentroids
 
     #6. Termina
-    lw    ra, 0(sp)
-    addi  sp, sp, 4
-
     la a0, messageEndMainSingleCluster
     li a7, printString
     ecall
-
+    
+    lw    ra, 0(sp)
+    addi  sp, sp, 4
     jr ra
 
 
