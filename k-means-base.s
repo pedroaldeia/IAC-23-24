@@ -263,7 +263,6 @@ outPrintCentroids:
     addi sp, sp 4
     jr ra
     
-
 ### calculateCentroids
 # Calcula os k centroides, a partir da distribuicao atual de pontos associados a cada agrupamento (cluster)
 # Argumentos: nenhum
@@ -274,7 +273,6 @@ calculateCentroids:
     la a2, points #endereço do array
     lw a3, n_points #número de pontos
     add a3, a3, a3 #comprimento do array
-    add a4, x0, x0 #counter
     add a0, x0, x0 
     add a1, x0, x0 
     addi t2, x0, 2 
@@ -293,32 +291,40 @@ calculateCentroids:
     
     jr ra
    
-  
+### arrayAverage
+# Calcula as coordenadas (x, y) do ponto médio de um array de pontos
+# Argumentos: 
+# a0: x
+# a1: y 
+# a2: array
+# a3: comprimento
+# Retorno: 
 arrayAverage:
-    beq a4, a3, outArrayAverrage #exit
-    add t3, x0, a4 #a1 = counter
-    slli t3, t3, 2 #a1 * 4
-    add t3, t3, a2 #endereço da posição do counter
+    add t1, x0, x0 #counter
+loopArrayAverage:
+    beq t1, a3, outArrayAverage
+    add t3, x0, t1 
+    slli t3, t3, 2 
+    add t3, t3, a2 
     lw t0, 0(t3) #t0 = A[counter]
-    rem t4, a4, t2 #ver se é par
+    rem t4, t1, t2 #ver se é par
     bnez t4, oddArrayAverage
     add a0, a0, t0 #caso par
-    addi a4, a4, 1
-    j arrayAverage
+    addi t1, t1, 1
+    j loopArrayAverage
     
 oddArrayAverage:
     add a1, a1, t0 #caso ímpar
     addi t1, t1, 1
-    j arrayAverage  
+    j loopArrayAverage  
     
-outArrayAverrage:
+outArrayAverage:
     addi t4, x0, 2
     div t4, a3, t4 #calculo da média
     div a0, a0, t4
     div a1, a1, t4
 
-    jr ra 
-
+    jr ra
 
 
 ### mainSingleCluster
