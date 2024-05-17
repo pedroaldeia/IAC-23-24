@@ -196,12 +196,17 @@ outCleanScreen:
 # Altera t0, t1, t2, t3, t4, t5
 # Altera a0, a1, a2, a7
 
+### printClusters
+# Pinta os agrupamentos na LED matrix com a cor correspondente.
+# Argumentos: nenhum
+# Retorno: nenhum
+# Altera t0, t1, t2, t3, t4, t5
+# Altera a0, a1, a2, a7
+
 printClusters:
     # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
     la   t0, n_points    #t0-> n_points
     la   t1, points      #t1-> vetor points
-    #la   t3, clusters    #t3-> vetor clusters
-    #la   t4, colors      #t4-> vetor das cores
     lw   t0, 0(t0)
     #salvaguardar stack pointer:
     addi sp, sp, -4
@@ -211,12 +216,7 @@ loopPrintClusters:
     addi t0, t0, -1 
     lw   a0, 0(t1)       #vai buscar o x e y
     lw   a1, 4(t1)  
-    li   a2, 0x00ffff ## <--remover depois
-    #lw   t5, 0(t3)       #vai buscar o numero do cluster do ponto
-    #slli t5, t5, 2
-    #addi t4, t5, t4      #calcula o endereco da cor do cluster
-    #lw   a2, 0(t4)       #vai buscar a cor
-    #addi t3, t3, 4
+    li   a2, 0xff0000
     addi t1, t1, 8        #passa para o proximo ponto
     jal  ra, printPoint   #pinta o ponto (anterior) no led
     j    loopPrintClusters
