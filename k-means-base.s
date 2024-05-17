@@ -25,8 +25,8 @@
 .data
 
 #Input A - linha inclinada
-#n_points:    .word 9
-#points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
+n_points:    .word 9
+points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
 #n_points:    .word 5
@@ -37,8 +37,8 @@
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-n_points:    .word 30
-points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+#n_points:    .word 30
+#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
 #InputExtra A
 #n_points:     .word 4
@@ -188,13 +188,6 @@ outCleanScreen:
     ecall
     jr ra
 
-    
-### printClusters
-# Pinta os agrupamentos na LED matrix com a cor correspondente.
-# Argumentos: nenhum
-# Retorno: nenhum
-# Altera t0, t1, t2, t3, t4, t5
-# Altera a0, a1, a2, a7
 
 ### printClusters
 # Pinta os agrupamentos na LED matrix com a cor correspondente.
