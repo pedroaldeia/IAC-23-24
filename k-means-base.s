@@ -458,7 +458,7 @@ skipNearestCluster:
     lw   a1, 8(sp)
     addi s1, s1, 1 #adiciona 1 a contagem
     addi s2, s2, 8
-    bge  s0, s1, LoopNearestCluster # recomeca loop
+    bgt  s0, s1, LoopNearestCluster # recomeca loop
     #poe o resultado pretendido em a0
     addi a0, s4, 0 
     #vai buscar os registos anteriores e espaco a stack
@@ -469,7 +469,8 @@ skipNearestCluster:
     lw   s3, 24(sp)
     lw   s4, 28(sp)
     addi sp, sp, 32
-
+    addi a7, x0, printInt
+    ecall
     jr ra
 
 
@@ -571,20 +572,21 @@ mainLoop:
     
     #3. attributeCluster
     jal  ra, attributeCluster
-    
-    #4. calculateCentroids
-    jal  ra, calculateCentroids
-    
+ 
     #3. printClusters
     jal  ra, printClusters
     
     #5. printCentroids
     jal   ra, printCentroids
     
+
+    #4. calculateCentroids
+    jal  ra, calculateCentroids
+    
     addi s0, s0, -1
     bnez s0, mainLoop 
     #end loop
-    
+
     #6. Termina
     #la a0, messageEndMainKmeans
     li a7, printString
