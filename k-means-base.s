@@ -73,8 +73,9 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 .equ         black      0
 .equ         white      0xffffff
 
-.equ         printInt       1
-.equ         printString    4
+.equ         printInt           1
+.equ         printString        4
+.equ         getSystem64bitsMs  30
 
 
 # !Nota ao utilizador: Caso queira ver a execu  o de cada printPoint apesar das suas >= n chamadas,
@@ -514,10 +515,16 @@ loopAttributeCluster:
     
     
 ### initializeCentroids
-# Inicializa com valores pseudo-rand?micos [0;31] o vetor centroids
+# Inicializa com valores pseudo-randómicos [0;31] o vetor centroids
 # Argumentos: nenhum
 # Retorno: nenhum
 # Altera: a0-a1, a7, t0-t6 | *centroids
+
+#OPTIMIZATION: 
+# Esta função aproveita que o resultado gerado pela multiplicação dos ms do unix-timestamp do sistema
+# no a0 é de 32 bits e em vez de fazer o remainder (rem) entre cada multiplicação, simlpsmente faz um and
+# com uma máscara para os 5bits inferiores, muito mais eficiente do que rem. Para além disso, em vez
+# de multiplicar todas as vezes (a cada nova coord), simplesmente desliza os bits da seed. 
 
 initializeCentroids:
     addi t0, x0, 0  # Counter
@@ -526,7 +533,7 @@ initializeCentroids:
     li t2, 5        # Limite at� necessitar mudar a seed: floor(32bits/5bits) => floor(6.4) = 6
     lw t3, k        # Limite geral (offset de 8)
     slli t3,t3, 1   # k*2 (offset de 4)
-    addi a7, x0, 30
+    addi a7, x0, getSystem64bitsMs
     ecall
     mul a0, a1, a0
     la t6, centroids
@@ -538,14 +545,14 @@ loopInitializeCentroids:
     beq t1, t3, exitInitializeCentroids 
     beq t0, t2, updateRandInitializeCentroids
 
-    and t5, a1, t4  # Pega 5 bits de a0, t4 � a m�scara. 0b11111 = 31
+    and t5, a1, t4  # Pega 5 bits de a0, t4 é a máscara. 0b11111 = 31
     srli a1, a1, 5
 
     sw t5, 0(t6)
     
     addi t0, t0, 1 # Incremento
     addi t1, t1, 1
-    addi t6, t6, 4 # Avan�ar 4 no ptr
+    addi t6, t6, 4 # Avançar 4 no ptr
     j loopInitializeCentroids
 exitInitializeCentroids:
     jr ra
