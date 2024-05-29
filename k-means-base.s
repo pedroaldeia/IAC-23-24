@@ -25,8 +25,8 @@
 .data
 
 #Input A - linha inclinada
-n_points:    .word 9
-points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
+#n_points:    .word 9
+#points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
 #n_points:    .word 5
@@ -37,8 +37,8 @@ points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-#n_points:    .word 30
-#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+n_points:    .word 30
+points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
 #InputExtra A
 #n_points:     .word 4
@@ -48,18 +48,22 @@ points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 #n_points:     .word 4
 #points:       .word 0,0 , 31,31, 0,31, 31, 0
 
+#InputExtra C
+#n_points:     .word 11
+#points:       .word 0,0 , 0,1 , 0,2 , 0,3 , 0,4 , 0,5 , 0,6 , 0,7 , 0,8 , 0,9 , 0,10
+
 # Valores de centroids e k a usar na 1a parte do projeto:
-centroids:   .word 0,0
-k:           .word 1
+#centroids:   .word 0,0
+#k:           .word 1
 
 # Valores de centroids, k e L a usar na 2a parte do prejeto:
-#centroids:   .word 0,0, 10,0, 0,10
-#k:           .word 3
-#L:           .word 10
+centroids:   .word 0,0, 3,5, 0,10
+k:           .word 3
+L:           .word 10
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
-#clusters:
+clusters:     .zero 120
 
 
 #Definicoes de cores a usar no projeto 
@@ -73,8 +77,8 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 .equ         printString    4
 
 
-# !Nota ao utilizador: Caso queira ver a execução de cada printPoint apesar das suas >= n chamadas,
-# sinta-se à vontade para modificar a constante abaixo para 1.
+# !Nota ao utilizador: Caso queira ver a execu  o de cada printPoint apesar das suas >= n chamadas,
+# sinta-se   vontade para modificar a constante abaixo para 1.
 .equ    shouldPrintMessage_PrintPoint   0
 
 messageCleanScreen:             .string    "cleanScreen executado.\n"
@@ -95,10 +99,10 @@ stringCommaSpace:               .string    ", "
  
 .text
     # Chama funcao principal da 1a parte do projeto
-    jal mainSingleCluster
+    #jal mainSingleCluster
 
     # Descomentar na 2a parte do projeto:
-    #jal mainKMeans
+    jal mainKMeans
     
     #Termina o programa (chamando chamada sistema)
     li a7, 10
@@ -109,7 +113,7 @@ stringCommaSpace:               .string    ", "
 # Pinta o ponto (x,y) na LED matrix com a cor passada por argumento
 # Nota: a implementacao desta funcao ja' e' fornecida pelos docentes
 # E' uma funcao auxiliar que deve ser chamada pelas funcoes seguintes que pintam a LED matrix.
-# Não altera registos temporários.
+# N o altera registos tempor rios.
 # Argumentos:
 # a0: x
 # a1: y
@@ -163,7 +167,7 @@ jr ra
     
 
 ### cleanScreen
-# Limpa todos os pontos do ecrã
+# Limpa todos os pontos do ecr 
 # Argumentos: nenhum
 # Retorno: nenhum
 # Altera: a0, a7, t0-t2 
@@ -173,12 +177,12 @@ cleanScreen:
     li t2, LED_MATRIX_0_WIDTH
     mul t1, t2, t1 # t1 - num leds
     slli t1, t1, 2 # t1 - num leds * 4
-    li t2, LED_MATRIX_0_BASE  # => 1º addr
+    li t2, LED_MATRIX_0_BASE  # => 1  addr
     add t1, t1, t2  # t1 - num leds * 4 + Base => ult addr
     
 loopCleanScreen:
     beq t2,t1, outCleanScreen  
-    sw t0, 0(t2)  # coloca a cor na memória
+    sw t0, 0(t2)  # coloca a cor na mem ria
     addi t2, t2, 4
     j loopCleanScreen
 outCleanScreen:
@@ -200,6 +204,8 @@ printClusters:
     # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
     la   t0, n_points    #t0-> n_points
     la   t1, points      #t1-> vetor points
+    la   t3, clusters    #t3-> vetor clusters
+    la   t4, colors      #t4-> vetor das cores
     lw   t0, 0(t0)
     #salvaguardar stack pointer:
     addi sp, sp, -4
@@ -209,7 +215,11 @@ loopPrintClusters:
     addi t0, t0, -1 
     lw   a0, 0(t1)       #vai buscar o x e y
     lw   a1, 4(t1)  
-    li   a2, 0xff0000
+    lw   t5, 0(t3)       #vai buscar o numero do cluster do ponto (t5--> endere�o final da cor do ponto)
+    slli t5, t5, 2
+    add  t5, t5, t4      #calcula o endereco da cor do cluster
+    lw   a2, 0(t5)       #vai buscar a cor
+    addi t3, t3, 4
     addi t1, t1, 8        #passa para o proximo ponto
     jal  ra, printPoint   #pinta o ponto (anterior) no led
     j    loopPrintClusters
@@ -221,7 +231,6 @@ outPrintClusters:
     li a7, printString
     ecall
     jr ra                 #volta para o endereco anterior
-
 ### printCentroids
 # Pinta os centroides na LED matrix
 # Nota: deve ser usada a cor preta (black) para todos os centroides
@@ -263,13 +272,13 @@ outPrintCentroids:
 
 calculateCentroids:
     # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
-    la a2, points #endereço do array
-    lw a3, n_points #número de pontos
+    la a2, points #endere o do array
+    lw a3, n_points #n mero de pontos
     add a3, a3, a3 #comprimento do array
     add a0, x0, x0 
     add a1, x0, x0 
     addi t2, x0, 2 
-    addi sp, sp, -4 #alloca memória no stack
+    addi sp, sp, -4 #alloca mem ria no stack
     sw ra, 0(sp)
     jal ra, arrayAverage 
     lw ra, 0(sp)
@@ -285,7 +294,7 @@ calculateCentroids:
     jr ra
    
 ### arrayAverage
-# Calcula as coordenadas (x, y) do ponto médio de um array de pontos
+# Calcula as coordenadas (x, y) do ponto m dio de um array de pontos
 # Argumentos: 
 # a0: x
 # a1: y 
@@ -300,20 +309,20 @@ loopArrayAverage:
     slli t3, t3, 2 
     add t3, t3, a2 
     lw t0, 0(t3) #t0 = A[counter]
-    rem t4, t1, t2 #ver se é par
+    rem t4, t1, t2 #ver se   par
     bnez t4, oddArrayAverage
     add a0, a0, t0 #caso par
     addi t1, t1, 1
     j loopArrayAverage
     
 oddArrayAverage:
-    add a1, a1, t0 #caso ímpar
+    add a1, a1, t0 #caso  mpar
     addi t1, t1, 1
     j loopArrayAverage  
     
 outArrayAverage:
     addi t4, x0, 2
-    div t4, a3, t4 #calculo da média
+    div t4, a3, t4 #calculo da m dia
     div a0, a0, t4
     div a1, a1, t4
 
@@ -365,9 +374,25 @@ mainSingleCluster:
 # a2, a3: x1, y1
 # Retorno:
 # a0: distance
+# Altera a0, t0
 
 manhattanDistance:
-    # POR IMPLEMENTAR (2a parte)
+    # media das coordenadas dos pontos:
+    bge  a2, a0, xtwoBiggManhattanDistance #se x1>=x0 jump
+    sub  a0, a0, a2                        #x0-x1
+    j    yCalcManhattanDistance
+xtwoBiggManhattanDistance:
+    sub  a0, a2, a0                        #x1-x0
+yCalcManhattanDistance:
+    bge  a3, a1, ytwoBiggManhattanDistance #se y1>=y0 jump
+    sub  t0, a1, a3                        #x0-x1
+    j    calcDistManhattanDistance
+ytwoBiggManhattanDistance:
+    sub  t0, a3, a1                        #x1-x0
+    
+calcDistManhattanDistance:
+    # calcula distancia
+    add  a0, t0, a0    #dist = dx+dy
     jr ra
 
 
@@ -377,17 +402,172 @@ manhattanDistance:
 # a0, a1: (x, y) point
 # Retorno:
 # a0: cluster index
+# Altera a0, a1, a2, a3
 
 nearestCluster:
     # POR IMPLEMENTAR (2a parte)
+    # salvaguardar dados (nomeadamente os 's', que v?o ser usados neste c?digo)
+    addi sp, sp, -32
+    sw   ra, 0(sp)
+    sw   a0, 4(sp)
+    sw   a1, 8(sp)
+    sw   s0, 12(sp)
+    sw   s1, 16(sp)
+    sw   s2, 20(sp)
+    sw   s3, 24(sp)
+    sw   s4, 28(sp)
+    # inicializa??o de tempor?rios e ir buscar dados (k, adress centroids)
+    lw   s0, k
+    addi s1, x0, 0
+    la   s2, centroids
+    addi s3, x0, 0
+LoopNearestCluster:
+    lw   a2, 0(s2)   #vai buscar o x e y do ponto
+    lw   a3, 4(s2)
+    jal  ra, manhattanDistance  #calcula distancia
+    beq  s1, x0, firstIterNearestCluster
+    bge  a0, s3, skipNearestCluster #se a distancia for maior do que a anterior da skip
+firstIterNearestCluster:
+    add  s4, s1, x0   #se n?o guarda o indice
+    add  s3, a0, x0   #e guarda a distancia ao ponto
+skipNearestCluster:
+    #vai buscar os pontos a stack
+    lw   a0, 4(sp)
+    lw   a1, 8(sp)
+    addi s1, s1, 1 #adiciona 1 a contagem
+    addi s2, s2, 8
+    bge  s0, s1, LoopNearestCluster # recomeca loop
+    #poe o resultado pretendido em a0
+    addi a0, s4, 0 
+    #vai buscar os registos anteriores e espaco a stack
+    lw   ra, 0(sp)
+    lw   s0, 12(sp)
+    lw   s1, 16(sp)
+    lw   s2, 20(sp)
+    lw   s3, 24(sp)
+    lw   s4, 28(sp)
+    addi sp, sp, 32
+
     jr ra
 
+
+### attributeCluster
+# Coloca no vetor cluster o ?ndice do cluster a que o ponto(do vetor) est? mais proximo
+# Argumentos: nenhum
+# Retorno: nenhum
+# Altera registos: a0, a1, a2, a3
+
+attributeCluster:
+    #salvaguardar os registos (nomeadamente os 's')
+    addi sp, sp, -20
+    sw   ra, 0(sp)
+    sw   s0, 4(sp)
+    sw   s1, 8(sp)
+    sw   s2, 12(sp)
+    sw   s3, 16(sp)
+    #incicializar registos
+    la   s0, points   #s0 --> adress de points
+    la   s1, clusters #s1 --> adress de clusters
+    addi s2, x0, 0    #s2 --> iterador
+    lw   s3, n_points #s3 --> numero de pontos
+    #calcular nearest cluster e atribuir o cluster
+loopAttributeCluster:
+    lw   a0, 0(s0) #coloca os argumentos para chamar nearestCluster
+    lw   a1, 4(s0)
+    jal  ra, nearestCluster
+    sw   a0, 0(s1) #coloca o indice no vetor cluster
+    addi s0, s0, 8
+    addi s1, s1, 4
+    addi s2, s2, 1
+    bgt  s3, s2, loopAttributeCluster
+    #colocar de volta os registos anteriores
+    lw   ra, 0(sp)
+    lw   s0, 4(sp)
+    lw   s1, 8(sp)
+    lw   s2, 12(sp)
+    lw   s3, 16(sp)
+    addi sp, sp, 20
+    jr   ra
+    
+    
+### initializeCentroids
+# Inicializa com valores pseudo-rand?micos [0;31] o vetor centroids
+# Argumentos: nenhum
+# Retorno: nenhum
+# Altera: a0-a1, a7, t0-t6 | *centroids
+
+initializeCentroids:
+    addi t0, x0, 0  # Counter
+    addi t1, x0, 0  # Counter agregado
+    addi t4, x0, 31
+    li t2, 5        # Limite at� necessitar mudar a seed: floor(32bits/5bits) => floor(6.4) = 6
+    lw t3, k        # Limite geral (offset de 8)
+    slli t3,t3, 1   # k*2 (offset de 4)
+    addi a7, x0, 30
+    ecall
+    la t6, centroids
+updateRandInitializeCentroids:
+    addi t0, x0, 0  # Counter reset
+    mul a0, a0, a0  # Next seed
+    addi a1, a0, 0
+loopInitializeCentroids:
+    beq t1, t3, exitInitializeCentroids 
+    beq t0, t2, updateRandInitializeCentroids
+
+    and t5, a1, t4  # Pega 5 bits de a0, t4 � a m�scara. 0b11111 = 31
+    srli a1, a1, 5
+
+    sw t5, 0(t6)
+    
+    addi t0, t0, 1 # Incremento
+    addi t1, t1, 1
+    addi t6, t6, 4 # Avan�ar 4 no ptr
+    j loopInitializeCentroids
+exitInitializeCentroids:
+    jr ra
 
 ### mainKMeans
 # Executa o algoritmo *k-means*.
 # Argumentos: nenhum
-# Retorno: nenhum
+# Retorno: nenhum  
 
 mainKMeans:  
     # POR IMPLEMENTAR (2a parte)
+    addi sp, sp, -4
+    sw   ra, 0(sp)
+ 
+    #1. cleanScreen
+    jal  ra, cleanScreen
+    
+    #2. initializeCentroids
+    jal  ra, initializeCentroids
+    
+    lw   s0, L  #s0 --> iterador (vem do L que ? o numero de execu??es do c?digo)
+mainLoop:
+    #3. attributeCluster
+    jal  ra, attributeCluster
+    
+    #4. calculateCentroids
+    jal  ra, calculateCentroids
+    
+    #3. printClusters
+    jal  ra, printClusters
+    
+    #5. printCentroids
+    jal   ra, printCentroids
+    
+    addi s0, s0, -1
+    bnez s0, mainLoop 
+    #end loop
+    
+    #6. Termina
+    #la a0, messageEndMainKmeans
+    li a7, printString
+    ecall
+    
+    # Mensagem de fim de execucao
+    lw    ra, 0(sp)
+    addi  sp, sp, 4
     jr ra
+    
+#vers�o 2.0
