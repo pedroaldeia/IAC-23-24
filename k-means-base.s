@@ -272,59 +272,81 @@ outPrintCentroids:
 
 calculateCentroids:
     # IMPLEMENTADO (1a parte) - POR IMPLEMENTAR (2a parte)
-    la a2, points #endere o do array
-    lw a3, n_points #n mero de pontos
-    add a3, a3, a3 #comprimento do array
-    add a0, x0, x0 
-    add a1, x0, x0 
-    addi t2, x0, 2 
-    addi sp, sp, -4 #alloca mem ria no stack
+    addi sp, sp, -12
     sw ra, 0(sp)
-    jal ra, arrayAverage 
-    lw ra, 0(sp)
-    addi sp, sp 4
-    la t3, centroids
-    sw a0, 0(t3) #guarda os valores no array 
-    sw a1, 4(t3)
+    sw s0, 4(sp)
+    sw s1, 8(sp)
     
+    #la a2, points #endereço points
+    lw a3, n_points #número de pontos
+    add a3, a3, a3 #comprimento do array
+    #la a4, clusters #endereço clusters
+    add a5, x0, x0 #índice do cluster
+    lw s0, k #número de clusters
+    la s1, centroids
+loopCalculateCentroids:
+    la a2, points
+    la a4, clusters
+    jal ra, arrayAverage 
+    sw a0, 0(s1) #guarda os valores no array 
+    sw a1, 4(s1)
+    addi a5, a5, 1
+    addi s1, s1, 8
+    addi s0, s0, -1
+    bne s0, x0, loopCalculateCentroids
+     
     la a0, messageCalculateCentroids
     li a7, printString
     ecall
     
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    addi sp, sp 12
     jr ra
    
 ### arrayAverage
-# Calcula as coordenadas (x, y) do ponto m dio de um array de pontos
-# Argumentos: 
-# a0: x
-# a1: y 
-# a2: array
-# a3: comprimento
+# Calcula as coordenadas (x, y) do ponto médio de um array de pontos
+# Argumentos:  
+# a2: points
+# a3: n_points*2 (comprimento)
+# a4: clusters
+# a5: cluster index
 # Retorno: 
+# a0: x
+# a1: y
+
 arrayAverage:
+    add a0, x0, x0 #retorno
+    add a1, x0, x0 
     add t1, x0, x0 #counter
+    addi t2, x0, 2 
+    add t5, x0, x0
+    add t6, x0, x0 #n_pontos_somados
 loopArrayAverage:
-    beq t1, a3, outArrayAverage
-    add t3, x0, t1 
-    slli t3, t3, 2 
+    beq t1, a3, outArrayAverage   
+    slli t3, t1, 2 
     add t3, t3, a2 
     lw t0, 0(t3) #t0 = A[counter]
-    rem t4, t1, t2 #ver se   par
-    bnez t4, oddArrayAverage
-    add a0, a0, t0 #caso par
+    rem t4, t1, t2 #ver se é par
+    bnez t4, oddArrayAverage #salto para o caso ímpar
+    lw t5, 0(a4) # cluster index do ponto
+    addi a4, a4, 4
     addi t1, t1, 1
+    bne t5, a5, loopArrayAverage
+    add a0, a0, t0 #caso par
     j loopArrayAverage
     
 oddArrayAverage:
-    add a1, a1, t0 #caso  mpar
     addi t1, t1, 1
+    bne t5, a5, loopArrayAverage
+    add a1, a1, t0 #caso ímpar
+    addi t6, t6, 1
     j loopArrayAverage  
     
 outArrayAverage:
-    addi t4, x0, 2
-    div t4, a3, t4 #calculo da m dia
-    div a0, a0, t4
-    div a1, a1, t4
+    div a0, a0, t6
+    div a1, a1, t6
 
     jr ra
 
@@ -505,6 +527,7 @@ initializeCentroids:
     slli t3,t3, 1   # k*2 (offset de 4)
     addi a7, x0, 30
     ecall
+    mul a0, a1, a0
     la t6, centroids
 updateRandInitializeCentroids:
     addi t0, x0, 0  # Counter reset
@@ -544,6 +567,8 @@ mainKMeans:
     
     lw   s0, L  #s0 --> iterador (vem do L que ? o numero de execu??es do c?digo)
 mainLoop:
+    jal  ra, cleanScreen
+    
     #3. attributeCluster
     jal  ra, attributeCluster
     
